@@ -49,6 +49,8 @@ module.exports = function(grunt) {
       var buildName
       if(opts.pushLocation === DOCKER_HUB_URL) {
         buildName = opts.username + '/' + opts.buildName
+      } else if (opts.pushLocation === '')  {
+        buildName = opts.buildName;
       } else {
         buildName = opts.pushLocation + '/' + opts.buildName
       }
