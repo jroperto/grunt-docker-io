@@ -18,14 +18,11 @@ module.exports = function(grunt) {
 
   grunt.registerMultiTask('docker_io', 'Build and Push Docker Images', function() {
     // Merge task-specific and/or target-specific options with these defaults.
-    var DOCKER_HUB_URL = "http://hub.docker.io"
     var REQUIRES_LOGIN = "Please login prior to push:"
     var opts = this.options({
       dockerFileLocation: '.',
       buildName: '',
       tag: ['latest'],
-      pushLocation: DOCKER_HUB_URL,
-      username: process.env.USER,
       push: true,
       force: false
     });
@@ -47,37 +44,13 @@ module.exports = function(grunt) {
 
     var getBase = function(){
       var buildName
-      if(opts.pushLocation === DOCKER_HUB_URL) {
-        buildName = opts.username + '/' + opts.buildName
-      } else if (opts.pushLocation === '')  {
+      if (opts.pushLocation === '')  {
         buildName = opts.buildName;
       } else {
         buildName = opts.pushLocation + '/' + opts.buildName
       }
       return buildName;
     }
-
-    // Check that user is logged in
-    runIf(opts.push, function(){
-      var loginOpts = ['login']
-      if(opts.pushLocation !== DOCKER_HUB_URL) {
-        loginOpts.push(opts.pushLocation)
-      }
-
-      var dockerLogin = spawn('docker', loginOpts)
-      dockerLogin.stdout.on('data', function(data){
-        data = data || ''
-        var usernameRegex = /\(.*\)/
-        if(usernameRegex.exec(data) && usernameRegex.exec(data).length > 0) {
-          if(usernameRegex.exec(data)[0] !== '(' + opts.username + ')'){
-            grunt.fatal('Please Login First')
-          }
-          next()
-        } else {
-          grunt.fatal('Please login to the docker registry - ' + opts.pushLocation)
-        }
-      })
-    })
 
     if( typeof opts.tag === 'string')
       opts.tag = opts.tag.split(',')
